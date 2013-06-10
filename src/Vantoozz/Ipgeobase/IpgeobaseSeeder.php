@@ -1,0 +1,62 @@
+<?php
+
+namespace Vantoozz\Ipgeobase;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class IpgeobaseSeeder extends Seeder {
+
+    public function run()
+    {
+        if(file_exists( __DIR__.'/cities.txt') && file_exists( __DIR__.'/cidr_optim.txt'))
+        {
+            DB::table('ipgeobase_cities')->delete();
+
+            $file = file( __DIR__.'/cities.txt');
+            $pattern = '#(\d+)\s+(.*?)\t+(.*?)\t+(.*?)\t+(.*?)\s+(.*)#';
+            foreach ($file as $row)
+            {
+                $row = iconv('windows-1251', 'utf-8', $row);
+                if(preg_match($pattern, $row, $out))
+                {
+                    DB::table('ipgeobase_cities')->insert(
+                        array(
+                            'id' => $out[1],
+                            'city' => $out[2],
+                            'region' => $out[3],
+                            'district' => $out[4],
+                            'lat' => $out[5],
+                            'lng' => $out[6]
+                        )
+                    );
+                }
+            }
+
+
+
+            DB::table('ipgeobase_base')->delete();
+
+            $file = file( __DIR__.'/cidr_optim.txt');
+            $pattern = '#(\d+)\s+(\d+)\s+(\d+\.\d+\.\d+\.\d+)\s+-\s+(\d+\.\d+\.\d+\.\d+)\s+(\w+)\s+(\d+|-)#';
+            foreach ($file as $row)
+            {
+                if(preg_match($pattern, $row, $out))
+                {
+                    DB::table('ipgeobase_base')->insert(
+                        array(
+                            'long_ip1' => $out[1],
+                            'long_ip2' => $out[2],
+                            'ip1' => $out[3],
+                            'ip2' => $out[4],
+                            'country' => $out[5],
+                            'city_id' => is_numeric($out[6]) && 0 < (int)$out[6] ? (int)$out[6] : null
+                        )
+                    );
+                }
+            }
+
+        }
+    }
+
+}
