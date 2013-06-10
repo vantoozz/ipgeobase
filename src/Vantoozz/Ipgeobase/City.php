@@ -2,9 +2,9 @@
 
 namespace Vantoozz\Ipgeobase;
 
-use Illuminate\Database\Eloquent;
+use Illuminate\Database\Eloquent\Model;
 
-class City extends Eloquent{
+class City extends Model{
 
     protected $table = 'ipgeobase_cities';
 
