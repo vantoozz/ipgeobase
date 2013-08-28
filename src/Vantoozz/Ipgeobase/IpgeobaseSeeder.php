@@ -5,21 +5,18 @@ namespace Vantoozz\Ipgeobase;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class IpgeobaseSeeder extends Seeder {
+class IpgeobaseSeeder extends Seeder
+{
 
     public function run()
     {
-        if(file_exists( __DIR__.'/cities.txt') && file_exists( __DIR__.'/cidr_optim.txt'))
-        {
+        if (file_exists(__DIR__ . '/cities.txt') && file_exists(__DIR__ . '/cidr_optim.txt')) {
             DB::table('ipgeobase_cities')->delete();
 
-            $file = file( __DIR__.'/cities.txt');
+            $file = file(__DIR__ . '/cities.txt');
             $pattern = '#(\d+)\s+(.*?)\t+(.*?)\t+(.*?)\t+(.*?)\s+(.*)#';
-            foreach ($file as $row)
-            {
-                $row = iconv('windows-1251', 'utf-8', $row);
-                if(preg_match($pattern, $row, $out))
-                {
+            foreach ($file as $row) {
+                if (preg_match($pattern, $row, $out)) {
                     DB::table('ipgeobase_cities')->insert(
                         array(
                             'id' => $out[1],
@@ -34,15 +31,12 @@ class IpgeobaseSeeder extends Seeder {
             }
 
 
-
             DB::table('ipgeobase_base')->delete();
 
-            $file = file( __DIR__.'/cidr_optim.txt');
+            $file = file(__DIR__ . '/cidr_optim.txt');
             $pattern = '#(\d+)\s+(\d+)\s+(\d+\.\d+\.\d+\.\d+)\s+-\s+(\d+\.\d+\.\d+\.\d+)\s+(\w+)\s+(\d+|-)#';
-            foreach ($file as $row)
-            {
-                if(preg_match($pattern, $row, $out))
-                {
+            foreach ($file as $row) {
+                if (preg_match($pattern, $row, $out)) {
                     DB::table('ipgeobase_base')->insert(
                         array(
                             'long_ip1' => $out[1],
@@ -54,6 +48,16 @@ class IpgeobaseSeeder extends Seeder {
                         )
                     );
                 }
+            }
+
+            $cities = DB::table('ipgeobase_cities')
+                ->join('ipgeobase_base', 'ipgeobase_cities.id', '=', 'ipgeobase_base.city_id')
+                ->select('ipgeobase_cities.id', 'ipgeobase_base.country')->get();
+            
+            foreach ($cities as $city) {
+                DB::table('ipgeobase_cities')
+                    ->where('id', $city->id)
+                    ->update(array('country' => $city->country));
             }
 
         }
