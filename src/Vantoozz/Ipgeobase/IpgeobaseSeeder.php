@@ -24,7 +24,8 @@ class IpgeobaseSeeder extends Seeder
                             'region' => $out[3],
                             'district' => $out[4],
                             'lat' => $out[5],
-                            'lng' => $out[6]
+                            'lng' => $out[6],
+                            'country'=>''
                         )
                     );
                 }
